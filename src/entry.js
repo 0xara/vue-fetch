@@ -1,9 +1,12 @@
 
-import { isArray } from 'js-helpers/dist/array/isArray';
-import { hasOwnProperty } from 'js-helpers/dist/object/hasOwnProperty';
 import Http from './Http';
 
-function install(Vue, options = {}, setup = {}) {
+function install(Vue, options = {}) {
+
+    const { headers = {}, ...rest } = options;
+
+    Http.setDefaultOptions(rest);
+    Http.setDefaultHeaders(headers);
 
     Vue.prototype.$http = Http;
 
