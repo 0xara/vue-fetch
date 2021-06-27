@@ -1,5 +1,3 @@
-import 'js-helpers/dist/array/isArray';
-import 'js-helpers/dist/object/hasOwnProperty';
 import _objectToFormData from 'js-helpers/dist/request/objectToFormData';
 import { tryParseJson } from 'js-helpers/dist/json/tryParseJson';
 import { encodeQueryData } from 'js-helpers/dist/request/queryStringParameter';
@@ -157,16 +155,25 @@ var Http = function () {
         key: 'default_options',
         get: function get() {
             return _default_options;
+        },
+        set: function set(options) {
+            _default_options = options;
         }
     }, {
         key: 'default_headers',
         get: function get() {
             return _default_headers;
+        },
+        set: function set(headers) {
+            _default_headers = headers;
         }
     }, {
         key: 'base_url',
         get: function get() {
             return _base_url;
+        },
+        set: function set(url) {
+            _base_url = url;
         }
     }]);
 
@@ -249,8 +256,17 @@ function prependBaseUrl(url) {
     return url;
 }
 
-function install(Vue) {
+function _objectWithoutProperties$1(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
+function install(Vue) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    var _options$headers = options.headers,
+        headers = _options$headers === undefined ? {} : _options$headers,
+        rest = _objectWithoutProperties$1(options, ['headers']);
+
+    Http.setDefaultOptions(rest);
+    Http.setDefaultHeaders(headers);
 
     Vue.prototype.$http = Http;
 }

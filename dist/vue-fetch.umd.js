@@ -1,8 +1,8 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('js-helpers/dist/array/isArray'), require('js-helpers/dist/object/hasOwnProperty'), require('js-helpers/dist/request/objectToFormData'), require('js-helpers/dist/json/tryParseJson'), require('js-helpers/dist/request/queryStringParameter')) :
-    typeof define === 'function' && define.amd ? define(['exports', 'js-helpers/dist/array/isArray', 'js-helpers/dist/object/hasOwnProperty', 'js-helpers/dist/request/objectToFormData', 'js-helpers/dist/json/tryParseJson', 'js-helpers/dist/request/queryStringParameter'], factory) :
-    (global = global || self, factory(global.VueFetch = {}, global.isArray, global.hasOwnProperty, global._objectToFormData, global.tryParseJson, global.queryStringParameter));
-}(this, (function (exports, isArray, hasOwnProperty, _objectToFormData, tryParseJson, queryStringParameter) { 'use strict';
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('js-helpers/dist/request/objectToFormData'), require('js-helpers/dist/json/tryParseJson'), require('js-helpers/dist/request/queryStringParameter')) :
+    typeof define === 'function' && define.amd ? define(['exports', 'js-helpers/dist/request/objectToFormData', 'js-helpers/dist/json/tryParseJson', 'js-helpers/dist/request/queryStringParameter'], factory) :
+    (global = global || self, factory(global.VueFetch = {}, global._objectToFormData, global.tryParseJson, global.queryStringParameter));
+}(this, (function (exports, _objectToFormData, tryParseJson, queryStringParameter) { 'use strict';
 
     _objectToFormData = _objectToFormData && Object.prototype.hasOwnProperty.call(_objectToFormData, 'default') ? _objectToFormData['default'] : _objectToFormData;
 
@@ -159,16 +159,25 @@
             key: 'default_options',
             get: function get() {
                 return _default_options;
+            },
+            set: function set(options) {
+                _default_options = options;
             }
         }, {
             key: 'default_headers',
             get: function get() {
                 return _default_headers;
+            },
+            set: function set(headers) {
+                _default_headers = headers;
             }
         }, {
             key: 'base_url',
             get: function get() {
                 return _base_url;
+            },
+            set: function set(url) {
+                _base_url = url;
             }
         }]);
 
@@ -251,8 +260,17 @@
         return url;
     }
 
-    function install(Vue) {
+    function _objectWithoutProperties$1(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
+    function install(Vue) {
+        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+        var _options$headers = options.headers,
+            headers = _options$headers === undefined ? {} : _options$headers,
+            rest = _objectWithoutProperties$1(options, ['headers']);
+
+        Http.setDefaultOptions(rest);
+        Http.setDefaultHeaders(headers);
 
         Vue.prototype.$http = Http;
     }
