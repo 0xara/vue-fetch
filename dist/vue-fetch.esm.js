@@ -77,13 +77,13 @@ var Http = function () {
         _classCallCheck$1(this, Http);
     }
 
-    _createClass$1(Http, null, [{
+    _createClass$1(Http, [{
         key: 'get',
         value: function get(url) {
             var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
             var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-            return fetch(prepareGetUrl(prependBaseUrl(url), data), _extends({ method: 'GET' }, prepareOptions(options))).then(checkStatus).then(parseResponse).catch(parseError);
+            return fetch(prepareGetUrl(this.prependBaseUrl(url), data), _extends({ method: 'GET' }, this.prepareOptions(options))).then(checkStatus).then(parseResponse).catch(parseError);
         }
     }, {
         key: 'post',
@@ -91,10 +91,10 @@ var Http = function () {
             var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
             var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-            return fetch(prependBaseUrl(url), _extends({
+            return fetch(this.prependBaseUrl(url), _extends({
                 method: 'POST',
                 body: prepareData(data)
-            }, prepareOptions(options, data))).then(checkStatus).then(parseResponse).catch(parseError);
+            }, this.prepareOptions(options, data))).then(checkStatus).then(parseResponse).catch(parseError);
         }
     }, {
         key: 'put',
@@ -116,6 +116,48 @@ var Http = function () {
             var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
             return Http.post(url, addMethodToData('DELETE', data), options);
+        }
+    }, {
+        key: 'prependBaseUrl',
+        value: function prependBaseUrl(url) {
+            var base_url = this.base_url || Http.base_url;
+            if (base_url) {
+                return base_url + url;
+            }
+            return url;
+        }
+    }, {
+        key: 'prepareOptions',
+        value: function prepareOptions(opts, data) {
+            var default_options = Http.default_options;
+            var default_headers = Http.default_headers;
+
+            var _opts$headers = opts.headers,
+                headers = _opts$headers === undefined ? {} : _opts$headers,
+                options = _objectWithoutProperties(opts, ['headers']);
+
+            if (HttpUtil.isFormData(data)) {
+                //https://stackoverflow.com/questions/39280438/fetch-missing-boundary-in-multipart-form-data-post
+                delete default_headers.headers['Content-Type'];
+            }
+
+            if (options.hasOwnProperty('base_url')) {
+                var _options = options,
+                    base_url = _options.base_url,
+                    rest = _objectWithoutProperties(_options, ['base_url']);
+
+                this.base_url = base_url;
+                options = rest;
+            }
+
+            return _extends({}, default_options, options, {
+                headers: _extends({}, default_headers, headers)
+            });
+        }
+    }], [{
+        key: 'instance',
+        value: function instance() {
+            return new Http();
         }
     }, {
         key: 'setDefaultHeader',
@@ -152,6 +194,16 @@ var Http = function () {
             Http.default_options = options;
         }
     }, {
+        key: 'setBaseUrl',
+        value: function setBaseUrl(url) {
+            Http.base_url = url;
+        }
+    }, {
+        key: 'getBaseUrl',
+        value: function getBaseUrl() {
+            return Http.base_url;
+        }
+    }, {
         key: 'default_options',
         get: function get() {
             return _default_options;
@@ -179,23 +231,6 @@ var Http = function () {
 
     return Http;
 }();
-
-function prepareOptions(opts, data) {
-    var default_options = Http.default_options;
-    var default_headers = Http.default_headers;
-
-    var _opts$headers = opts.headers,
-        headers = _opts$headers === undefined ? {} : _opts$headers,
-        options = _objectWithoutProperties(opts, ['headers']);
-
-    if (HttpUtil.isFormData(data)) {
-        //https://stackoverflow.com/questions/39280438/fetch-missing-boundary-in-multipart-form-data-post
-        delete default_headers.headers['Content-Type'];
-    }
-    return _extends({}, default_options, options, {
-        headers: _extends({}, default_headers, headers)
-    });
-}
 
 function prepareData(data) {
     if (HttpUtil.isFormData(data)) return;
@@ -247,13 +282,6 @@ function parseError(error) {
         error.data = tryParseJson(data);
         throw error;
     });
-}
-
-function prependBaseUrl(url) {
-    if (Http.base_url) {
-        return Http.base_url + url;
-    }
-    return url;
 }
 
 function _objectWithoutProperties$1(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
