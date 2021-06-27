@@ -3,17 +3,20 @@ import HttpUtil from "./Http/HttpUtil";
 import { tryParseJson } from 'js-helpers/dist/json/tryParseJson';
 import { encodeQueryData } from 'js-helpers/dist/request/queryStringParameter';
 
-const _default_options = {};
+let _default_options = {};
 
-const _default_headers = {};
+let _default_headers = {};
 
-const _base_url = "";
+let _base_url = "";
 
 class Http {
 
     static get default_options() { return _default_options; }
+    static set default_options(options) { _default_options = options; }
     static get default_headers() { return _default_headers; }
+    static set default_headers(headers) { _default_headers = headers; }
     static get base_url() { return _base_url; }
+    static set base_url(url) { _base_url = url; }
 
     static get(url, data = {}, options= {}) {
         return fetch(prepareGetUrl(prependBaseUrl(url), data), { method: 'GET', ...prepareOptions(options) })
