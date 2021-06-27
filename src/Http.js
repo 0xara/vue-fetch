@@ -18,33 +18,37 @@ class Http {
     static get base_url() { return _base_url; }
     static set base_url(url) { _base_url = url; }
 
-    static get(url, data = {}, options= {}) {
-        return fetch(prepareGetUrl(prependBaseUrl(url), data), { method: 'GET', ...prepareOptions(options) })
+    static instance() {
+        return new Http();
+    }
+
+    get(url, data = {}, options= {}) {
+        return fetch(prepareGetUrl(this.prependBaseUrl(url), data), { method: 'GET', ...this.prepareOptions(options) })
             .then(checkStatus)
             .then(parseResponse)
             .catch(parseError);
     }
 
-    static post(url, data = {}, options= {}) {
-        return fetch(prependBaseUrl(url), {
+    post(url, data = {}, options= {}) {
+        return fetch(this.prependBaseUrl(url), {
             method: 'POST',
             body: prepareData(data),
-            ...prepareOptions(options, data)
+            ...this.prepareOptions(options, data)
         })
             .then(checkStatus)
             .then(parseResponse)
             .catch(parseError);
     }
 
-    static put(url, data, options= {}) {
+    put(url, data, options= {}) {
         return Http.post(url, addMethodToData('PUT', data), options);
     }
 
-    static patch(url, data, options= {}) {
+    patch(url, data, options= {}) {
         return Http.post(url, addMethodToData('PATCH', data), options);
     }
 
-    static delete(url, data, options= {}) {
+    delete(url, data, options= {}) {
         return Http.post(url, addMethodToData('DELETE', data), options);
     }
 
@@ -75,26 +79,50 @@ class Http {
     static setDefaultOptions(options) {
         Http.default_options = options;
     }
-}
 
-function prepareOptions(opts, data) {
-    let default_options = Http.default_options;
-    let default_headers = Http.default_headers;
-    let { headers = {}, ...options } = opts;
-
-    if(HttpUtil.isFormData(data))  {
-        //https://stackoverflow.com/questions/39280438/fetch-missing-boundary-in-multipart-form-data-post
-        delete default_headers.headers['Content-Type'];
+    static setBaseUrl(url) {
+        Http.base_url = url;
     }
-    return {
-        ...default_options,
-        ...options,
-        headers: {
-            ...default_headers,
-            ...headers
+
+    static getBaseUrl() {
+        return Http.base_url;
+    }
+
+    prependBaseUrl(url) {
+        let base_url = this.base_url || Http.base_url;
+        if(base_url) {
+            return base_url + url;
         }
-    };
+        return url;
+    }
+
+    prepareOptions(opts, data) {
+        let default_options = Http.default_options;
+        let default_headers = Http.default_headers;
+        let { headers = {}, ...options } = opts;
+
+        if(HttpUtil.isFormData(data))  {
+            //https://stackoverflow.com/questions/39280438/fetch-missing-boundary-in-multipart-form-data-post
+            delete default_headers.headers['Content-Type'];
+        }
+
+        if(options.hasOwnProperty('base_url')) {
+            const { base_url, ...rest } = options;
+            this.base_url = base_url;
+            options = rest;
+        }
+
+        return {
+            ...default_options,
+            ...options,
+            headers: {
+                ...default_headers,
+                ...headers
+            }
+        };
+    }
 }
+
 
 function prepareData(data) {
     if(HttpUtil.isFormData(data)) return;
@@ -148,11 +176,5 @@ function parseError(error) {
     })
 }
 
-function prependBaseUrl(url) {
-    if(Http.base_url) {
-        return Http.base_url + url;
-    }
-    return url;
-}
 
 export default Http;
