@@ -7,6 +7,10 @@ let _default_options = {};
 
 let _default_headers = {};
 
+let _init_then = (data) => data;
+
+let _init_catch = (error) => {throw error};
+
 let _base_url = "";
 
 class Http {
@@ -17,6 +21,10 @@ class Http {
     static set default_headers(headers) { _default_headers = headers; }
     static get base_url() { return _base_url; }
     static set base_url(url) { _base_url = url; }
+    static get init_then() { return _init_then; }
+    static set init_then(func) { _init_then = func; }
+    static get init_catch() { return _init_catch; }
+    static set init_catch(func) { _init_catch = func; }
 
     static instance() {
         return new Http();
@@ -26,7 +34,9 @@ class Http {
         return fetch(prepareGetUrl(this.prependBaseUrl(url), data), { method: 'GET', ...this.prepareOptions(options) })
             .then(checkStatus)
             .then(parseResponse)
-            .catch(parseError);
+            .catch(parseError)
+            .then(Http.init_then)
+            .catch(Http.init_catch);
     }
 
     post(url, data = {}, options= {}) {
@@ -37,7 +47,9 @@ class Http {
         })
             .then(checkStatus)
             .then(parseResponse)
-            .catch(parseError);
+            .catch(parseError)
+            .then(Http.init_then)
+            .catch(Http.init_catch);
     }
 
     put(url, data, options= {}) {
@@ -120,6 +132,14 @@ class Http {
                 ...headers
             }
         };
+    }
+
+    static setInitThen(func) {
+        Http.init_then = func;
+    }
+
+    static setInitCatch(func) {
+        Http.init_catch = func;
     }
 }
 

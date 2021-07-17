@@ -70,6 +70,14 @@ var _default_options = {};
 
 var _default_headers = {};
 
+var _init_then = function _init_then(data) {
+    return data;
+};
+
+var _init_catch = function _init_catch(error) {
+    throw error;
+};
+
 var _base_url = "";
 
 var Http = function () {
@@ -83,7 +91,7 @@ var Http = function () {
             var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
             var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-            return fetch(prepareGetUrl(this.prependBaseUrl(url), data), _extends({ method: 'GET' }, this.prepareOptions(options))).then(checkStatus).then(parseResponse).catch(parseError);
+            return fetch(prepareGetUrl(this.prependBaseUrl(url), data), _extends({ method: 'GET' }, this.prepareOptions(options))).then(checkStatus).then(parseResponse).catch(parseError).then(Http.init_then).catch(Http.init_catch);
         }
     }, {
         key: 'post',
@@ -94,7 +102,7 @@ var Http = function () {
             return fetch(this.prependBaseUrl(url), _extends({
                 method: 'POST',
                 body: prepareData(data)
-            }, this.prepareOptions(options, data))).then(checkStatus).then(parseResponse).catch(parseError);
+            }, this.prepareOptions(options, data))).then(checkStatus).then(parseResponse).catch(parseError).then(Http.init_then).catch(Http.init_catch);
         }
     }, {
         key: 'put',
@@ -204,6 +212,16 @@ var Http = function () {
             return Http.base_url;
         }
     }, {
+        key: 'setInitThen',
+        value: function setInitThen(func) {
+            Http.init_then = func;
+        }
+    }, {
+        key: 'setInitCatch',
+        value: function setInitCatch(func) {
+            Http.init_catch = func;
+        }
+    }, {
         key: 'default_options',
         get: function get() {
             return _default_options;
@@ -226,6 +244,22 @@ var Http = function () {
         },
         set: function set(url) {
             _base_url = url;
+        }
+    }, {
+        key: 'init_then',
+        get: function get() {
+            return _init_then;
+        },
+        set: function set(func) {
+            _init_then = func;
+        }
+    }, {
+        key: 'init_catch',
+        get: function get() {
+            return _init_catch;
+        },
+        set: function set(func) {
+            _init_catch = func;
         }
     }]);
 
